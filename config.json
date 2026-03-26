@@ -1,0 +1,14 @@
+{
+  "client_name": "ClientA",
+  "brand_name": "Ford Focus",
+  "keyword_rules": "ford\nfocus\nford+focus\n福特",
+  "ptt_boards": ["car", "gossiping"],
+  "dcard_boards": ["car"],
+  "mobile01_ids": {"汽車討論": 317},
+  "threads_kw": ["Ford Focus", "福特"],
+  "news_keywords": ["Ford Focus", "福特 Focus"],
+  "include_comments": false,
+  "comment_pages": 5,
+  "port": 5001,
+  "chrome_profile": ""
+}

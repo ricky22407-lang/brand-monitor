@@ -1,0 +1,28 @@
+clients/*/chrome_profile/
+.env
+.env*
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+.env# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Mac
+.DS_Store
+
+# logs
+*.log
+
+# IDE
+.vscode/
+.idea/

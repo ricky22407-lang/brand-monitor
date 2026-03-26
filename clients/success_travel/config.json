@@ -1,0 +1,20 @@
+{
+  "client_name": "success_travel",
+  "brand_name": "百合旅遊",
+  "keyword_rules": "",
+  "ptt_boards": [
+    "car"
+  ],
+  "dcard_boards": [
+    "car"
+  ],
+  "mobile01_ids": {
+    "汽車討論": 317
+  },
+  "threads_kw": [],
+  "news_keywords": [],
+  "include_comments": false,
+  "comment_pages": 5,
+  "port": 5002,
+  "chrome_profile": ""
+}

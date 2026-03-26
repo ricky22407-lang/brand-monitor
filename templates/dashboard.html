@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BrandPulse | 品牌輿情監控系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fb;--white:#ffffff;--border:#e5e7eb;--border2:#d1d5db;
+  --text:#111827;--text2:#6b7280;--text3:#9ca3af;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#86efac;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
+.shell{display:grid;grid-template-columns:340px 1fr;grid-template-rows:64px 1fr;min-height:100vh}
+.topbar{grid-column:1/-1;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.logo-wrap{display:flex;align-items:center;gap:10px;padding-right:24px;border-right:1px solid var(--border)}
+.logo-icon{width:36px;height:36px;background:#111827;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-size:15px;font-weight:800;color:#111827;letter-spacing:-.3px}
+.logo-sub{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase}
+.brand-badge{display:flex;align-items:center;gap:8px;margin-left:20px}
+.brand-label{font-size:12px;color:var(--text3)}
+.brand-name-d{font-size:14px;font-weight:600;color:var(--text)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.sdot.on{background:#22c55e;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.8;box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.stext{font-size:13px;font-weight:500;color:var(--text2)}
+.stext.on{color:#16a34a}
+.lupdate{font-size:12px;color:var(--text3);font-family:var(--mono)}
+.sidebar{background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sb-body{padding:20px;flex:1;display:flex;flex-direction:column;gap:18px}
+.sb-foot{padding:16px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;background:var(--white);position:sticky;bottom:0}
+.sec-t{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;font-weight:500;color:var(--text2)}
+.field input,.field textarea,.field select{background:var(--white);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;width:100%;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.field textarea{resize:vertical;min-height:88px;line-height:1.6}
+.hint{font-size:11px;color:var(--text3);margin-top:2px}
+/* datetime-local 修正：全寬不溢出 */
+.field input[type=datetime-local]{font-family:var(--mono);font-size:11px;padding:8px 10px;width:100%;min-width:0}
+.sc-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.sc{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid var(--border2);background:var(--white);color:var(--text2);cursor:pointer;transition:.15s}
+.sc:hover{background:var(--bg);border-color:var(--text3);color:var(--text)}
+/* checkbox group for multi-select boards */
+.check-group{display:flex;flex-direction:column;gap:6px;max-height:140px;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.check-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:2px 0}
+.check-item input[type=checkbox]{width:14px;height:14px;accent-color:#6366f1;cursor:pointer;flex-shrink:0}
+.check-item span{font-size:12px;color:var(--text);user-select:none}
+.check-item small{font-size:11px;color:var(--text3);margin-left:auto}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+.trow span{font-size:13px;font-weight:500;color:var(--text)}
+.tgl{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0;position:absolute}
+.tgl-t{position:absolute;inset:0;background:var(--border2);border-radius:10px;transition:.2s}
+.tgl input:checked+.tgl-t{background:#6366f1}
+.tgl-th{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl input:checked~.tgl-th{left:18px}
+.prow{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-top:6px}
+.prow span{font-size:12px;color:var(--text2);flex:1}
+.prow input{width:56px;text-align:center;background:var(--white);border:1px solid var(--border2);border-radius:6px;padding:4px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none}
+.btn-p{padding:11px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:#111827;color:#fff;width:100%;transition:.15s}
+.btn-p:hover{background:#374151}
+.btn-p:disabled{opacity:.45;cursor:not-allowed}
+.btn-s{padding:9px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--white);color:var(--text2);width:100%;transition:.15s}
+.btn-s:hover{background:var(--bg);border-color:var(--text3);color:var(--text)}
+.main{padding:24px 32px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;max-width:1100px}
+.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.sc2{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.sc2::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.sc2.t::before{background:#6366f1}.sc2.p::before{background:var(--green)}.sc2.n::before{background:var(--red)}.sc2.u::before{background:var(--text3)}
+.sl{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.sv{font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
+.sc2.t .sv{color:#6366f1}.sc2.p .sv{color:var(--green)}.sc2.n .sv{color:var(--red)}.sc2.u .sv{color:var(--text3)}
+.ssub{font-size:11px;color:var(--text3)}
+.lcard{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.lhdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.lic{font-size:13px;color:var(--text3);font-family:var(--mono)}
+.lt{font-size:13px;font-weight:600;color:var(--text)}
+/* log 區域加高：240px */
+.lbody{background:#0f1117;padding:14px 18px;font-family:var(--mono);font-size:11.5px;color:#a3e635;max-height:240px;overflow-y:auto;line-height:1.9;min-height:80px}
+.ll{opacity:.9}.ll:last-child{opacity:1;color:#86efac}
+.lp{color:#4b5563;font-style:italic}
+.rcard{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.rhdr{padding:18px 22px;border-bottom:1px solid var(--border)}
+.rt{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px}
+.fsec{display:flex;flex-direction:column;gap:8px}
+.fr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frl{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;width:36px;flex-shrink:0}
+.fb{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1.5px solid var(--border);background:var(--white);color:var(--text2);cursor:pointer;transition:.15s;white-space:nowrap}
+.fb:hover{border-color:var(--text3);color:var(--text)}
+.fb.s-on{border-color:#6366f1;color:#6366f1;background:#eef2ff}
+.fb.k-on{border-color:#0d9488;color:#0d9488;background:#f0fdfa}
+.fb.src-on{border-color:#d97706;color:#d97706;background:#fffbeb}
+.rbody{padding:0}
+.mi{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:6px;transition:background .12s}
+.mi:hover{background:var(--bg)}.mi:last-child{border-bottom:none}
+.mr1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:700;padding:2px 9px;border-radius:5px;letter-spacing:.3px;text-transform:uppercase}
+.src-PTT{background:#fef3c7;color:#92400e}
+.src-Dcard{background:#dbeafe;color:#1e40af}
+.src-Mobile01{background:#ccfbf1;color:#134e4a}
+.src-Threads{background:#ede9fe;color:#4c1d95}
+.src-News{background:#fee2e2;color:#991b1b}
+.ta{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.tc{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.sp{font-size:11px;font-weight:600;padding:2px 10px;border-radius:10px}
+.sp-positive{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.sp-negative{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.sp-neutral{background:#f9fafb;color:var(--text3);border:1px solid var(--border)}
+.mt{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto}
+.mti{font-size:13px;font-weight:500;color:var(--text);line-height:1.5}
+.mti a{color:var(--text);text-decoration:none}
+.mti a:hover{color:#6366f1;text-decoration:underline}
+.mp{font-size:11px;color:var(--text3)}
+.ms{font-size:11.5px;color:var(--text2);background:var(--bg);padding:6px 10px;border-radius:6px;border-left:3px solid var(--border2)}
+.empty{padding:48px;text-align:center;color:var(--text3);font-size:13px}
+.ei{font-size:32px;margin-bottom:12px;opacity:.4}
+.src-toggle{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:.15s;user-select:none;background:var(--white)}
+.src-toggle:hover{border-color:var(--text3);color:var(--text);background:var(--bg)}
+.src-toggle input[type=checkbox]{accent-color:#6366f1;width:14px;height:14px;flex-shrink:0}
+.src-toggle input:checked~span{color:var(--text)}
+.src-toggle:has(input:checked){border-color:#6366f1;background:#eef2ff;color:#4338ca}
+.src-icon{font-size:13px}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    <div><div class="logo-name">BrandPulse</div><div class="logo-sub">Enterprise Intelligence</div></div>
+  </div>
+  <div class="brand-badge">
+    <span class="brand-label">當前監控</span>
+    <span class="brand-name-d" id="hdr-brand">Ford Focus</span>
+  </div>
+  <div class="topbar-right">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="sdot" id="sdot"></div>
+      <span class="stext" id="stext">系統待機中</span>
+    </div>
+    <span class="lupdate" id="lupdate">最後更新 --:--</span>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="sb-body">
+
+    <div>
+      <div class="sec-t">品牌設定</div>
+      <div class="field">
+        <label>品牌名稱</label>
+        <input id="brand-name" value="Ford Focus" oninput="document.getElementById('hdr-brand').textContent=this.value">
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">關鍵字規則</div>
+      <div class="field">
+        <textarea id="keyword-rules">ford
+focus
+ford+focus
+福特</textarea>
+        <span class="hint">AND：+ ／ OR：or 或 | ／ 每行一組</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">時間區間</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="field"><label>開始時間</label><input type="datetime-local" id="time-start"></div>
+        <div class="field"><label>結束時間</label><input type="datetime-local" id="time-end"></div>
+      </div>
+      <div class="sc-row">
+        <button class="sc" onclick="setToday()">今天</button>
+        <button class="sc" onclick="set24h()">近24h</button>
+        <button class="sc" onclick="set7d()">近7天</button>
+        <button class="sc" onclick="clearTime()">清除</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">PTT 看板</div>
+      <div class="check-group" id="ptt-group">
+        <label class="check-item"><input type="checkbox" value="car" checked><span>car</span><small>汽車</small></label>
+        <label class="check-item"><input type="checkbox" value="gossiping"><span>gossiping</span><small>八卦</small></label>
+        <label class="check-item"><input type="checkbox" value="MobileComm"><span>MobileComm</span><small>手機通訊</small></label>
+        <label class="check-item"><input type="checkbox" value="Tech_Job"><span>Tech_Job</span><small>科技業工作</small></label>
+        <label class="check-item"><input type="checkbox" value="Food"><span>Food</span><small>美食</small></label>
+        <label class="check-item"><input type="checkbox" value="beauty"><span>beauty</span><small>美妝保養</small></label>
+        <label class="check-item"><input type="checkbox" value="home-sale"><span>home-sale</span><small>房屋買賣</small></label>
+        <label class="check-item"><input type="checkbox" value="Soft_Job"><span>Soft_Job</span><small>軟體工作</small></label>
+      </div>
+      <div class="field" style="margin-top:6px">
+        <label>自訂看板（逗號分隔）</label>
+        <input id="ptt-custom" placeholder="例：movie,baseball">
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">Dcard 看板</div>
+      <div class="check-group" id="dcard-group">
+        <label class="check-item"><input type="checkbox" value="car" checked><span>car</span><small>汽車</small></label>
+        <label class="check-item"><input type="checkbox" value="food"><span>food</span><small>美食</small></label>
+        <label class="check-item"><input type="checkbox" value="beauty"><span>beauty</span><small>美妝保養</small></label>
+        <label class="check-item"><input type="checkbox" value="3c"><span>3c</span><small>3C 電子</small></label>
+        <label class="check-item"><input type="checkbox" value="fashion"><span>fashion</span><small>時尚</small></label>
+        <label class="check-item"><input type="checkbox" value="house"><span>house</span><small>居家</small></label>
+        <label class="check-item"><input type="checkbox" value="exercise"><span>exercise</span><small>運動</small></label>
+      </div>
+      <div class="field" style="margin-top:6px">
+        <label>自訂看板（逗號分隔）</label>
+        <input id="dcard-custom" placeholder="例：pet,travel">
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">Mobile01 版區</div>
+      <div class="check-group" id="m01-group">
+        <label class="check-item"><input type="checkbox" value="317" checked><span>汽車討論</span><small>#317</small></label>
+        <label class="check-item"><input type="checkbox" value="522"><span>機車討論</span><small>#522</small></label>
+        <label class="check-item"><input type="checkbox" value="233"><span>手機與通訊</span><small>#233</small></label>
+        <label class="check-item"><input type="checkbox" value="141"><span>電腦與筆電</span><small>#141</small></label>
+        <label class="check-item"><input type="checkbox" value="563"><span>家電視聽</span><small>#563</small></label>
+        <label class="check-item"><input type="checkbox" value="319"><span>房屋交易</span><small>#319</small></label>
+        <label class="check-item"><input type="checkbox" value="382"><span>美妝保養</span><small>#382</small></label>
+        <label class="check-item"><input type="checkbox" value="180"><span>相機攝影</span><small>#180</small></label>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">其他來源</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="field"><label>Threads 關鍵字（逗號分隔）</label><input id="threads-kw" value="Ford Focus,福特"></div>
+        <div class="field"><label>新聞關鍵字（逗號分隔）</label><input id="news-kw" value="Ford Focus,福特 Focus"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">本次掃描來源</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label class="src-toggle" id="src-ptt">
+          <input type="checkbox" id="scan-ptt" checked>
+          <span class="src-icon">📋</span><span>PTT</span>
+        </label>
+        <label class="src-toggle" id="src-dcard">
+          <input type="checkbox" id="scan-dcard" checked>
+          <span class="src-icon">🟦</span><span>Dcard</span>
+        </label>
+        <label class="src-toggle" id="src-m01">
+          <input type="checkbox" id="scan-m01" checked>
+          <span class="src-icon">📱</span><span>Mobile01</span>
+        </label>
+        <label class="src-toggle" id="src-news">
+          <input type="checkbox" id="scan-news" checked>
+          <span class="src-icon">📰</span><span>新聞</span>
+        </label>
+        <label class="src-toggle" id="src-threads">
+          <input type="checkbox" id="scan-threads" checked>
+          <span class="src-icon">🧵</span><span>Threads</span>
+        </label>
+        <label class="src-toggle" id="src-fb">
+          <input type="checkbox" id="scan-fb" checked>
+          <span class="src-icon">📘</span><span>Facebook</span>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-t">進階選項</div>
+      <div class="trow">
+        <span>掃描留言區</span>
+        <label class="tgl"><input type="checkbox" id="include-comments" onchange="togglePages()"><div class="tgl-t"></div><div class="tgl-th"></div></label>
+      </div>
+      <div class="prow" id="pages-row" style="display:none">
+        <span>留言往回掃幾頁</span>
+        <input type="number" id="comment-pages" value="5" min="1" max="20">
+      </div>
+    </div>
+
+  </div>
+  <div class="sb-foot">
+    <button class="btn-p" id="run-btn" onclick="startMonitor()">▶ 開始監控</button>
+    <button class="btn-p" id="stop-btn" onclick="stopMonitor()" style="display:none;background:#dc2626;margin-top:6px">⛔ 強制停止</button>
+    <span id="stop-msg" style="display:none;color:#dc2626;font-size:12px;font-weight:600;margin-top:4px;display:block"></span>
+    <button class="btn-s" onclick="saveConfig()" id="save-btn">💾 儲存設定</button>
+    <button class="btn-s" onclick="exportExcel()">↓ 匯出 Excel 報表</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button class="btn-s" onclick="openFbModal('groups')" style="color:#1877f2;border-color:#93c5fd;font-size:11px">📘 FB 社團</button>
+      <button class="btn-s" onclick="openFbModal('pages')" style="color:#1877f2;border-color:#93c5fd;font-size:11px">📄 FB 粉專</button>
+    </div>
+    <button class="btn-s" onclick="openCookieModal()" id="cookie-btn" style="font-size:12px">🍪 FB Cookie 設定</button>
+    <div class="field">
+      <label style="color:#1877f2;font-weight:600;font-size:11px">📘 FB 專屬關鍵字</label>
+      <textarea id="fb-keywords" style="min-height:60px;font-size:12px;resize:vertical" placeholder="每行一條，空白則使用主關鍵字規則&#10;例：福特&#10;Focus&#10;野馬"></textarea>
+      <span class="hint">空白 = 沿用主關鍵字規則</span>
+    </div>
+    <button class="btn-s" onclick="openBlacklist()" style="color:#dc2626;border-color:#fca5a5;font-size:12px">🚫 新聞黑名單</button>
+  </div>
+</aside>
+
+<!-- Cookie Modal -->
+<div id="cookie-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1001;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;width:540px;max-width:94vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+
+    <!-- Header -->
+    <div style="padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#111827">🍪 FB Cookie 設定</div>
+        <div style="font-size:12px;color:#9ca3af;margin-top:3px">設定後系統才能讀取 Facebook 社團與粉專</div>
+      </div>
+      <button onclick="closeCookieModal()" style="background:none;border:none;font-size:20px;color:#9ca3af;cursor:pointer;margin-top:-4px">✕</button>
+    </div>
+
+    <!-- Status bar -->
+    <div id="cookie-status-bar" style="margin:16px 28px 0;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:500;background:#f1f5f9;color:#64748b">
+      正在確認 Cookie 狀態...
+    </div>
+
+    <!-- Steps -->
+    <div style="padding:20px 28px">
+      <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:14px">📋 取得 Cookie 步驟教學</div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:24px;height:24px;background:#6366f1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#111827">安裝 Cookie-Editor 外掛</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:3px">在 Chrome 安裝免費外掛：</div>
+            <a href="https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm" target="_blank" style="font-size:11px;color:#6366f1;font-family:monospace;word-break:break-all">chromewebstore.google.com → 搜尋「Cookie-Editor」</a>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:24px;height:24px;background:#6366f1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#111827">在 Chrome 登入你的 Facebook 帳號</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:3px">確認已加入要監控的社團，並保持登入狀態</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:24px;height:24px;background:#6366f1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#111827">匯出 Cookie</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:3px">前往 <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">facebook.com</code>，點擊右上角 Cookie-Editor 圖示</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px">→ 點「<strong>Export</strong>」→ 選「<strong>Export as JSON</strong>」→ 已複製到剪貼簿</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:24px;height:24px;background:#6366f1;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">4</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:#111827">貼上 Cookie JSON</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:3px;margin-bottom:8px">將複製的內容貼到下方（Cmd+V）</div>
+            <textarea id="cookie-textarea" style="width:100%;height:100px;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;font-family:monospace;font-size:11px;line-height:1.6;resize:vertical;outline:none;color:#374151" placeholder='[{"name":"c_user","value":"..."},{"name":"xs","value":"..."},...]'></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-top:16px;font-size:11.5px;color:#92400e">
+        ⚠️ Cookie 通常有效 90 天以上。若 FB 要求重新登入，重新匯出一次即可。系統不會儲存你的 Facebook 密碼。
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-top:16px">
+        <span id="cookie-msg" style="font-size:12px;color:#16a34a;flex:1"></span>
+        <button onclick="closeCookieModal()" style="padding:8px 18px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer">取消</button>
+        <button onclick="saveCookie()" style="padding:8px 20px;border-radius:8px;border:none;background:#1877f2;color:#fff;font-size:13px;font-weight:600;cursor:pointer">儲存 Cookie</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FB Modal -->
+<div id="fb-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:500px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#111827" id="fb-modal-title">📘 FB 社團清單</div>
+        <div style="font-size:12px;color:#9ca3af;margin-top:2px" id="fb-modal-sub">每行貼入一個社團 URL</div>
+      </div>
+      <button onclick="closeFbModal()" style="background:none;border:none;font-size:20px;color:#9ca3af;cursor:pointer">✕</button>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#1e40af;margin-bottom:12px;line-height:1.6">
+      💡 範例格式：<br>
+      <code style="font-size:11px">https://www.facebook.com/groups/123456789</code><br>
+      <code style="font-size:11px">https://www.facebook.com/FordTaiwan</code>
+    </div>
+    <textarea id="fb-textarea" style="width:100%;height:200px;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;resize:vertical;outline:none;color:#111827" placeholder="每行貼入一個 Facebook URL..."></textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+      <span id="fb-msg" style="font-size:12px;color:#16a34a;flex:1"></span>
+      <button onclick="closeFbModal()" style="padding:8px 18px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer">取消</button>
+      <button onclick="saveFbModal()" style="padding:8px 20px;border-radius:8px;border:none;background:#1877f2;color:#fff;font-size:13px;font-weight:600;cursor:pointer">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Blacklist Modal -->
+<div id="bl-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px;width:480px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#111827">🚫 新聞黑名單</div>
+        <div style="font-size:12px;color:#9ca3af;margin-top:2px">排除不想收錄的新聞網域</div>
+      </div>
+      <button onclick="closeBlacklist()" style="background:none;border:none;font-size:20px;color:#9ca3af;cursor:pointer;padding:4px">✕</button>
+    </div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:8px">每行一個網域，例如：<code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:11px">8891.com.tw</code></div>
+    <textarea id="bl-textarea" style="width:100%;height:220px;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;resize:vertical;outline:none;color:#111827" placeholder="每行輸入一個網域..."></textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+      <span id="bl-msg" style="font-size:12px;color:#16a34a;flex:1"></span>
+      <button onclick="closeBlacklist()" style="padding:8px 18px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:500;cursor:pointer">取消</button>
+      <button onclick="saveBlacklist()" style="padding:8px 20px;border-radius:8px;border:none;background:#111827;color:#fff;font-size:13px;font-weight:600;cursor:pointer">儲存</button>
+    </div>
+  </div>
+</div>
+
+<main class="main">
+  <div class="sgrid">
+    <div class="sc2 t"><div class="sl">總結果數</div><div class="sv" id="m-total">0</div><div class="ssub" id="m-sub">文章 0・留言 0</div></div>
+    <div class="sc2 p"><div class="sl">正面情緒</div><div class="sv" id="m-pos">0</div></div>
+    <div class="sc2 n"><div class="sl">負面情緒</div><div class="sv" id="m-neg">0</div></div>
+    <div class="sc2 u"><div class="sl">中性情緒</div><div class="sv" id="m-neu">0</div></div>
+  </div>
+
+  <div class="lcard">
+    <div class="lhdr"><span class="lic">&gt;_</span><span class="lt">執行紀錄</span></div>
+    <div class="lbody" id="log-box"><span class="lp">等待任務啟動...</span></div>
+  </div>
+
+  <div class="rcard">
+    <div class="rhdr">
+      <div class="rt">監控結果</div>
+      <div class="fsec">
+        <div class="fr">
+          <span class="frl">情緒</span>
+          <button class="fb s-on" onclick="setF('sentiment','all',this)">全部</button>
+          <button class="fb" onclick="setF('sentiment','positive',this)">🟢 正面</button>
+          <button class="fb" onclick="setF('sentiment','negative',this)">🔴 負面</button>
+          <button class="fb" onclick="setF('sentiment','neutral',this)">⚪ 中性</button>
+        </div>
+        <div class="fr">
+          <span class="frl">類型</span>
+          <button class="fb k-on" onclick="setF('kind','all',this)">全部</button>
+          <button class="fb" onclick="setF('kind','article',this)">📄 文章</button>
+          <button class="fb" onclick="setF('kind','comment',this)">💬 留言</button>
+        </div>
+        <div class="fr" id="src-row">
+          <span class="frl">來源</span>
+          <button class="fb src-on" onclick="setF('source','all',this)">全部</button>
+        </div>
+      </div>
+    </div>
+    <div class="rbody" id="feed">
+      <div class="empty"><div class="ei">📊</div>點擊「開始監控」來取得資料</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<script>
+const F={sentiment:'all',kind:'all',source:'all'};
+
+// ── 設定載入/儲存 ────────────────────────────
+async function loadConfig(){
+  try{
+    const d=await fetch('/api/config').then(r=>r.json());
+    if(!d||Object.keys(d).length===0) return;
+
+    if(d.brand_name)    document.getElementById('brand-name').value=d.brand_name;
+    if(d.keyword_rules) document.getElementById('keyword-rules').value=d.keyword_rules;
+    if(d.threads_kw)    document.getElementById('threads-kw').value=(d.threads_kw||[]).join(',');
+    if(d.news_keywords) document.getElementById('news-kw').value=(d.news_keywords||[]).join(',');
+
+    // PTT 看板：勾選 config 裡的
+    if(d.ptt_boards){
+      document.querySelectorAll('#ptt-group input[type=checkbox]').forEach(cb=>{
+        cb.checked=d.ptt_boards.includes(cb.value);
+      });
+      // 不在預設清單的放到自訂欄
+      const presets=Array.from(document.querySelectorAll('#ptt-group input')).map(i=>i.value);
+      const custom=d.ptt_boards.filter(b=>!presets.includes(b));
+      if(custom.length) document.getElementById('ptt-custom').value=custom.join(',');
+    }
+
+    // Dcard 看板
+    if(d.dcard_boards){
+      document.querySelectorAll('#dcard-group input[type=checkbox]').forEach(cb=>{
+        cb.checked=d.dcard_boards.includes(cb.value);
+      });
+      const presets=Array.from(document.querySelectorAll('#dcard-group input')).map(i=>i.value);
+      const custom=d.dcard_boards.filter(b=>!presets.includes(b));
+      if(custom.length) document.getElementById('dcard-custom').value=custom.join(',');
+    }
+
+    // Mobile01
+    if(d.mobile01_ids){
+      const M01_MAP={"汽車討論":"317","機車討論":"522","手機與通訊":"233","電腦與筆電":"141","家電視聽":"563","房屋交易":"319","美妝保養":"382","相機攝影":"180"};
+      const selectedIds=Object.values(d.mobile01_ids).map(String);
+      document.querySelectorAll('#m01-group input[type=checkbox]').forEach(cb=>{
+        cb.checked=selectedIds.includes(cb.value);
+      });
+    }
+
+    if(typeof d.include_comments!=='undefined'){
+      document.getElementById('include-comments').checked=d.include_comments;
+      togglePages();
+    }
+    if(d.comment_pages) document.getElementById('comment-pages').value=d.comment_pages;
+    if(typeof d.fb_keywords !== 'undefined') document.getElementById('fb-keywords').value=d.fb_keywords||'';
+
+    // 更新 header 品牌名稱
+    if(d.brand_name) document.getElementById('hdr-brand').textContent=d.brand_name;
+
+    console.log('[BrandPulse] 設定已載入');
+  }catch(e){
+    console.log('[BrandPulse] 載入設定失敗:', e);
+  }
+}
+
+async function saveConfig(){
+  const btn=document.getElementById('save-btn');
+  btn.textContent='儲存中...';
+
+  const sp=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+  const getChecked=id=>Array.from(document.querySelectorAll('#'+id+' input:checked')).map(i=>i.value);
+  const M01_NAMES={"317":"汽車討論","522":"機車討論","233":"手機與通訊","141":"電腦與筆電","563":"家電視聽","319":"房屋交易","382":"美妝保養","180":"相機攝影"};
+
+  const pttBoards=[...getChecked('ptt-group'),...sp(document.getElementById('ptt-custom').value)];
+  const dcardBoards=[...getChecked('dcard-group'),...sp(document.getElementById('dcard-custom').value)];
+  const m01Ids={};
+  getChecked('m01-group').forEach(v=>{m01Ids[M01_NAMES[v]||v]=parseInt(v);});
+
+  const payload={
+    brand_name:       document.getElementById('brand-name').value,
+    keyword_rules:    document.getElementById('keyword-rules').value,
+    ptt_boards:       [...new Set(pttBoards)],
+    dcard_boards:     [...new Set(dcardBoards)],
+    mobile01_ids:     m01Ids,
+    threads_kw:       sp(document.getElementById('threads-kw').value),
+    news_keywords:    sp(document.getElementById('news-kw').value),
+    fb_keywords:      document.getElementById('fb-keywords').value,
+    include_comments: document.getElementById('include-comments').checked,
+    comment_pages:    parseInt(document.getElementById('comment-pages').value)||5,
+  };
+
+  try{
+    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.ok){
+      btn.textContent='✅ 已儲存';
+      setTimeout(()=>{btn.textContent='💾 儲存設定';},2000);
+    }
+  }catch(e){
+    btn.textContent='❌ 失敗';
+    setTimeout(()=>{btn.textContent='💾 儲存設定';},2000);
+  }
+}
+const ACT={sentiment:'s-on',kind:'k-on',source:'src-on'};
+let polling=null;
+
+// 台灣時間 UTC+8
+function twNow(){return new Date(Date.now()+8*3600000);}
+function twFmt(d){return d.toISOString().slice(0,16);}
+
+function setToday(){
+  const now=twNow();
+  const s=new Date(now);s.setUTCHours(0,0,0,0);
+  const e=new Date(now);e.setUTCHours(23,59,0,0);
+  document.getElementById('time-start').value=twFmt(s);
+  document.getElementById('time-end').value=twFmt(e);
+}
+function set24h(){
+  const e=twNow(),s=new Date(+e-864e5);
+  document.getElementById('time-start').value=twFmt(s);
+  document.getElementById('time-end').value=twFmt(e);
+}
+function set7d(){
+  const e=twNow(),s=new Date(+e-7*864e5);
+  document.getElementById('time-start').value=twFmt(s);
+  document.getElementById('time-end').value=twFmt(e);
+}
+function clearTime(){
+  document.getElementById('time-start').value='';
+  document.getElementById('time-end').value='';
+}
+function togglePages(){
+  document.getElementById('pages-row').style.display=
+    document.getElementById('include-comments').checked?'flex':'none';
+}
+function setF(type,val,btn){
+  F[type]=val;
+  const row=btn.closest('.fr');
+  row.querySelectorAll('.fb').forEach(b=>b.classList.remove('s-on','k-on','src-on'));
+  btn.classList.add(ACT[type]);
+  loadArticles();
+}
+
+// 取得勾選的看板/版區
+function getChecked(groupId){
+  return Array.from(document.querySelectorAll('#'+groupId+' input:checked')).map(i=>i.value);
+}
+function getM01Ids(){
+  const ids={};
+  const M01_NAMES={"317":"汽車討論","522":"機車討論","233":"手機與通訊","141":"電腦與筆電","563":"家電視聽","319":"房屋交易","382":"美妝保養","180":"相機攝影"};
+  getChecked('m01-group').forEach(v=>{ ids[M01_NAMES[v]||v]=parseInt(v); });
+  return ids;
+}
+
+async function startMonitor(){
+  const btn=document.getElementById('run-btn');
+  btn.disabled=true;btn.textContent='監控中...';
+  document.getElementById('stop-btn').style.display='block';
+  document.getElementById('stop-msg').style.display='none';
+  const sp=s=>s.split(',').map(x=>x.trim()).filter(Boolean);
+  const getChecked=id=>Array.from(document.querySelectorAll('#'+id+' input:checked')).map(i=>i.value);
+  const pttBoards=[...getChecked('ptt-group'),...sp(document.getElementById('ptt-custom').value)];
+  const dcardBoards=[...getChecked('dcard-group'),...sp(document.getElementById('dcard-custom').value)];
+  const M01_NAMES={"317":"汽車討論","522":"機車討論","233":"手機與通訊","141":"電腦與筆電","563":"家電視聽","319":"房屋交易","382":"美妝保養","180":"相機攝影"};
+  const m01Ids={};
+  getChecked('m01-group').forEach(v=>{m01Ids[M01_NAMES[v]||v]=parseInt(v);});
+
+  // 本次掃描來源勾選
+  const enabledSources={
+    ptt:     document.getElementById('scan-ptt').checked,
+    dcard:   document.getElementById('scan-dcard').checked,
+    mobile01:document.getElementById('scan-m01').checked,
+    news:    document.getElementById('scan-news').checked,
+    threads: document.getElementById('scan-threads').checked,
+    facebook:document.getElementById('scan-fb').checked,
+  };
+
+  const payload={
+    brand_name:       document.getElementById('brand-name').value,
+    keyword_rules:    document.getElementById('keyword-rules').value,
+    ptt_boards:       enabledSources.ptt     ? [...new Set(pttBoards)] : [],
+    dcard_boards:     enabledSources.dcard   ? [...new Set(dcardBoards)] : [],
+    mobile01_ids:     enabledSources.mobile01 ? m01Ids : {},
+    threads_kw:       enabledSources.threads  ? sp(document.getElementById('threads-kw').value) : [],
+    news_keywords:    enabledSources.news     ? sp(document.getElementById('news-kw').value) : [],
+    scan_facebook:    enabledSources.facebook,
+    include_comments: document.getElementById('include-comments').checked,
+    comment_pages:    parseInt(document.getElementById('comment-pages').value)||5,
+    fb_keywords:      document.getElementById('fb-keywords').value,
+    time_start:       document.getElementById('time-start').value,
+    time_end:         document.getElementById('time-end').value,
+  };
+  await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  startPolling();
+}
+
+function startPolling(){
+  if(polling)clearInterval(polling);
+  polling=setInterval(async()=>{
+    const d=await fetch('/api/status').then(r=>r.json());
+    const dot=document.getElementById('sdot'),st=document.getElementById('stext'),btn=document.getElementById('run-btn');
+    if(d.running){
+      dot.className='sdot on';st.className='stext on';st.textContent='監控中...';
+    } else {
+      dot.className='sdot';st.className='stext';st.textContent='系統待機中';
+      btn.disabled=false;btn.textContent='▶ 開始監控';
+      document.getElementById('stop-btn').style.display='none';
+      document.getElementById('stop-btn').disabled=false;
+      document.getElementById('stop-btn').textContent='⛔ 強制停止';
+      clearInterval(polling);loadArticles();updateSrc();
+    }
+    const s=d.stats||{};
+    document.getElementById('m-total').textContent=d.count||0;
+    document.getElementById('m-sub').textContent='文章 '+(s.article_count||0)+'・留言 '+(s.comment_count||0);
+    document.getElementById('m-pos').textContent=s.positive||0;
+    document.getElementById('m-neg').textContent=s.negative||0;
+    document.getElementById('m-neu').textContent=s.neutral||0;
+    const lb=document.getElementById('log-box');
+    if(d.log&&d.log.length){
+      lb.innerHTML=d.log.map(l=>'<div class="ll">'+l+'</div>').join('');
+      lb.scrollTop=lb.scrollHeight;
+    }
+    if(d.last_run)document.getElementById('lupdate').textContent='最後更新 '+d.last_run.slice(11,16);
+  },2000);
+}
+
+async function updateSrc(){
+  const srcs=await fetch('/api/sources').then(r=>r.json());
+  const row=document.getElementById('src-row');
+  const allBtn=row.querySelector('.fb');
+  row.innerHTML='';
+  const lbl=document.createElement('span');lbl.className='frl';lbl.textContent='來源';row.appendChild(lbl);row.appendChild(allBtn);
+  srcs.forEach(src=>{
+    const b=document.createElement('button');b.className='fb';b.textContent=src;
+    b.onclick=function(){setF('source',src,this);};
+    row.appendChild(b);
+  });
+}
+
+async function loadArticles(){
+  const items=await fetch('/api/articles?sentiment='+F.sentiment+'&kind='+F.kind+'&source='+F.source).then(r=>r.json());
+  const feed=document.getElementById('feed');
+  if(!items.length){
+    feed.innerHTML='<div class="empty"><div class="ei">🔍</div>沒有符合條件的資料</div>';
+    return;
+  }
+  const artN=items.filter(a=>a.type==='article').length;
+  const cmtN=items.filter(a=>a.type==='comment').length;
+  document.getElementById('m-sub').textContent='文章 '+artN+'・留言 '+cmtN;
+  feed.innerHTML=items.map(a=>{
+    const isCmt=a.type==='comment';
+    const sC='sp-'+(a.sentiment||'neutral');
+    const sL={positive:'正面',negative:'負面',neutral:'中性'}[a.sentiment]||'—';
+    const sc=a.sentiment_score?' '+Math.round(a.sentiment_score*100)+'%':'';
+    const ts=(a.timestamp||'').substring(0,16).replace('T',' ');
+    const main=isCmt?a.content:a.title;
+    return '<div class="mi"><div class="mr1"><span class="tag src-'+a.source+'">'+a.source+'</span><span class="tag '+(isCmt?'tc':'ta')+'">'+(isCmt?'💬 留言':'📄 文章')+'</span><span class="sp '+sC+'">'+sL+sc+'</span><span class="mt">'+ts+'</span></div><div class="mti"><a href="'+a.url+'" target="_blank">'+(main||'—')+'</a></div>'+(isCmt&&a.parent_title?'<div class="mp">↳ '+a.parent_title+'</div>':'')+(a.sentiment_summary&&a.sentiment_summary!=='未分析'?'<div class="ms">'+a.sentiment_summary+'</div>':'')+'</div>';
+  }).join('');
+}
+
+function exportExcel(){window.location.href='/api/export/excel';}
+
+// 頁面載入時自動載入設定
+window.addEventListener('DOMContentLoaded', loadConfig);
+
+// ── Cookie modal ────────────────────────────
+async function openCookieModal(){
+  document.getElementById('cookie-overlay').style.display='flex';
+  document.getElementById('cookie-msg').textContent='';
+  // 確認目前 cookie 狀態
+  try{
+    const r=await fetch('/api/fb/cookie/status').then(d=>d.json());
+    const bar=document.getElementById('cookie-status-bar');
+    if(r.valid){
+      bar.style.background='#f0fdf4';bar.style.color='#16a34a';
+      bar.textContent='✅ Cookie 有效（已設定）';
+    } else {
+      bar.style.background='#fef2f2';bar.style.color='#dc2626';
+      bar.textContent='❌ '+r.message;
+    }
+  }catch(e){
+    document.getElementById('cookie-status-bar').textContent='無法確認狀態';
+  }
+}
+function closeCookieModal(){
+  document.getElementById('cookie-overlay').style.display='none';
+}
+async function saveCookie(){
+  const raw=document.getElementById('cookie-textarea').value.trim();
+  const msg=document.getElementById('cookie-msg');
+  if(!raw){msg.textContent='請先貼上 Cookie JSON';msg.style.color='#dc2626';return;}
+  let parsed;
+  try{ parsed=JSON.parse(raw); }
+  catch(e){msg.textContent='格式錯誤，請確認是 JSON 格式';msg.style.color='#dc2626';return;}
+  const r=await fetch('/api/fb/cookie',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cookies:parsed})});
+  const d=await r.json();
+  if(d.ok){
+    msg.textContent='✅ 已儲存 '+d.count+' 個 Cookie';msg.style.color='#16a34a';
+    document.getElementById('cookie-btn').style.borderColor='#86efac';
+    document.getElementById('cookie-btn').style.color='#16a34a';
+    setTimeout(()=>{ closeCookieModal(); }, 1200);
+  } else {
+    msg.textContent='❌ '+(d.error||'儲存失敗');msg.style.color='#dc2626';
+  }
+}
+document.getElementById('cookie-overlay').addEventListener('click',function(e){if(e.target===this)closeCookieModal();});
+
+// ── FB modal ────────────────────────────────
+let _fbType = 'groups';
+async function openFbModal(type){
+  _fbType = type;
+  const overlay = document.getElementById('fb-overlay');
+  const ta = document.getElementById('fb-textarea');
+  const title = document.getElementById('fb-modal-title');
+  const sub = document.getElementById('fb-modal-sub');
+  overlay.style.display = 'flex';
+  document.getElementById('fb-msg').textContent = '';
+  if(type === 'groups'){
+    title.textContent = '📘 FB 社團清單';
+    sub.textContent = '每行貼入一個社團 URL，程式會定期掃描新貼文與留言';
+  } else {
+    title.textContent = '📄 FB 粉專清單';
+    sub.textContent = '每行貼入一個粉專 URL，程式會掃描粉專的公開貼文';
+  }
+  try {
+    const d = await fetch('/api/fb/'+type).then(r=>r.json());
+    const key = type === 'groups' ? 'groups' : 'pages';
+    ta.value = (d[key] || []).join('\n');
+  } catch { ta.value = ''; }
+}
+function closeFbModal(){
+  document.getElementById('fb-overlay').style.display = 'none';
+}
+async function saveFbModal(){
+  const ta = document.getElementById('fb-textarea');
+  const urls = ta.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const key = _fbType === 'groups' ? 'groups' : 'pages';
+  const body = {}; body[key] = urls;
+  const r = await fetch('/api/fb/'+_fbType, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const d = await r.json();
+  const msg = document.getElementById('fb-msg');
+  if(d.ok){
+    msg.textContent = '✅ 已儲存 '+d.count+' 筆';
+    setTimeout(()=>{ closeFbModal(); }, 1000);
+  }
+}
+document.getElementById('fb-overlay').addEventListener('click', function(e){if(e.target===this)closeFbModal();});
+
+// ── Blacklist modal ─────────────────────────
+async function openBlacklist(){
+  const overlay=document.getElementById('bl-overlay');
+  const ta=document.getElementById('bl-textarea');
+  overlay.style.display='flex';
+  document.getElementById('bl-msg').textContent='';
+  try{
+    const d=await fetch('/api/blacklist').then(r=>r.json());
+    ta.value=(d.domains||[]).join('\n');
+  }catch{ta.value='';}
+}
+function closeBlacklist(){
+  document.getElementById('bl-overlay').style.display='none';
+}
+async function saveBlacklist(){
+  const ta=document.getElementById('bl-textarea');
+  const domains=ta.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const r=await fetch('/api/blacklist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domains})});
+  const d=await r.json();
+  const msg=document.getElementById('bl-msg');
+  if(d.ok){
+    msg.textContent='✅ 已儲存 '+d.count+' 個網域';
+    setTimeout(()=>{msg.textContent='';},2500);
+  }
+}
+// 點擊背景關閉
+document.getElementById('bl-overlay').addEventListener('click',function(e){if(e.target===this)closeBlacklist();});
+
+async function stopMonitor(){
+  const sb=document.getElementById('stop-btn');
+  const sm=document.getElementById('stop-msg');
+  sb.disabled=true; sb.textContent='停止中...';
+  sm.style.display='block'; sm.textContent='⏳ 停止訊號已送出，等待爬蟲安全退出...';
+  try{
+    const r=await fetch('/api/stop',{method:'POST'});
+    const d=await r.json();
+    sm.textContent=d.message||'⛔ 已送出停止訊號';
+  }catch(e){
+    sm.textContent='⚠️ 送出失敗';
+  }
+  setTimeout(()=>{sb.disabled=false;sb.textContent='⛔ 強制停止';},3000);
+}
+</script>
+</body>
+</html>

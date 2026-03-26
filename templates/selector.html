@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BrandPulse | 選擇客戶</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif}
+.wrap{width:480px;max-width:94vw}
+.logo-row{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:32px}
+.logo-icon{width:44px;height:44px;background:#111827;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-size:22px;font-weight:800;color:#111827;letter-spacing:-.5px}
+.logo-sub{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:2px;text-transform:uppercase}
+.card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 4px 24px rgba(0,0,0,.06);padding:28px}
+.card-title{font-size:15px;font-weight:700;color:#111827;margin-bottom:4px}
+.card-sub{font-size:12px;color:#9ca3af;margin-bottom:20px}
+.client-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:320px;overflow-y:auto}
+.client-item{display:flex;align-items:center;padding:14px 16px;border:1.5px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all .15s;background:#fff;gap:14px}
+.client-item:hover{border-color:#6366f1;background:#f5f3ff}
+.client-icon{width:38px;height:38px;border-radius:8px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.client-info{flex:1;text-align:left}
+.client-name{font-size:14px;font-weight:700;color:#111827}
+.client-brand{font-size:12px;color:#6b7280;margin-top:1px}
+.client-port{font-size:11px;color:#9ca3af;font-family:'JetBrains Mono',monospace;margin-left:auto}
+.client-arrow{font-size:18px;color:#d1d5db}
+.divider{border:none;border-top:1px solid #f1f5f9;margin:16px 0}
+.new-client{display:flex;flex-direction:column;gap:10px}
+.new-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:2px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:500;color:#6b7280}
+.field input{border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;font-size:13px;color:#111827;outline:none;font-family:'Plus Jakarta Sans',sans-serif;width:100%;transition:border-color .15s}
+.field input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-create{padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:#111827;color:#fff;width:100%;transition:.15s;margin-top:4px}
+.btn-create:hover{background:#374151}
+.msg{font-size:12px;color:#16a34a;text-align:center;margin-top:8px;min-height:18px}
+.empty-hint{text-align:center;padding:24px;color:#9ca3af;font-size:13px}
+.empty-icon{font-size:28px;margin-bottom:8px;opacity:.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+    <div><div class="logo-name">BrandPulse</div><div class="logo-sub">Enterprise Intelligence</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">選擇客戶</div>
+    <div class="card-sub">點擊客戶進入監控系統</div>
+
+    <div class="client-list" id="client-list">
+      <div class="empty-hint"><div class="empty-icon">👥</div>尚未建立任何客戶</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="new-client">
+      <div class="new-title">➕ 新增客戶</div>
+      <div class="field"><label>客戶名稱（英文，作為資料夾名稱）</label><input id="nc-folder" placeholder="例：toyota_taiwan"></div>
+      <div class="row2">
+        <div class="field"><label>品牌顯示名稱</label><input id="nc-brand" placeholder="例：Toyota 台灣"></div>
+        <div class="field"><label>Port（5001 起，不重複）</label><input id="nc-port" type="number" value="5001" min="1024" max="65535"></div>
+      </div>
+      <button class="btn-create" onclick="createClient()">建立客戶資料夾</button>
+      <div class="msg" id="nc-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadClients(){
+  const r = await fetch('/api/clients');
+  const clients = await r.json();
+  const list = document.getElementById('client-list');
+  if(!clients.length){
+    list.innerHTML = '<div class="empty-hint"><div class="empty-icon">👥</div>尚未建立任何客戶<br><small>在下方新增第一個客戶</small></div>';
+    return;
+  }
+  list.innerHTML = clients.map(c => `
+    <div class="client-item" onclick="selectClient('${c.folder}', ${c.port})">
+      <div class="client-icon">🏢</div>
+      <div class="client-info">
+        <div class="client-name">${c.client_name}</div>
+        <div class="client-brand">${c.brand_name}</div>
+      </div>
+      <div class="client-port">:${c.port}</div>
+      <div class="client-arrow">›</div>
+    </div>
+  `).join('');
+}
+
+function selectClient(folder, port){
+  window.location.href = '/launch?client=' + encodeURIComponent(folder) + '&port=' + port;
+}
+
+async function createClient(){
+  const folder = document.getElementById('nc-folder').value.trim();
+  const brand  = document.getElementById('nc-brand').value.trim();
+  const port   = parseInt(document.getElementById('nc-port').value) || 5001;
+  const msg    = document.getElementById('nc-msg');
+
+  if(!folder){ msg.textContent = '請填寫客戶名稱'; msg.style.color='#dc2626'; return; }
+  if(!brand){  msg.textContent = '請填寫品牌名稱'; msg.style.color='#dc2626'; return; }
+
+  const r = await fetch('/api/clients', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({folder, brand_name: brand, port})
+  });
+  const d = await r.json();
+  if(d.ok){
+    msg.textContent = '✅ 客戶建立成功！';
+    msg.style.color = '#16a34a';
+    document.getElementById('nc-folder').value = '';
+    document.getElementById('nc-brand').value  = '';
+    document.getElementById('nc-port').value   = String(port + 1);
+    loadClients();
+  } else {
+    msg.textContent = '❌ ' + (d.error || '建立失敗');
+    msg.style.color = '#dc2626';
+  }
+}
+
+loadClients();
+</script>
+</body>
+</html>

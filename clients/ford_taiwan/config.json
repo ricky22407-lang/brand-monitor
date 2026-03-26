@@ -1,0 +1,29 @@
+{
+  "client_name": "ford_taiwan",
+  "brand_name": "ford",
+  "keyword_rules": "MG\nHS",
+  "ptt_boards": [
+    "car"
+  ],
+  "dcard_boards": [
+    "car"
+  ],
+  "mobile01_ids": {
+    "汽車討論": 317
+  },
+  "threads_kw": [
+    "ford focus",
+    "ford",
+    "福特"
+  ],
+  "news_keywords": [
+    "ford focus",
+    "ford",
+    "福特"
+  ],
+  "include_comments": true,
+  "comment_pages": 2,
+  "port": 5001,
+  "chrome_profile": "",
+  "fb_keywords": "MG\nHS\nFocus"
+}
